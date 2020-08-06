@@ -1,15 +1,23 @@
 import sys
 import os
 from os.path import join, dirname, abspath
-from PySide2.QtCore import QStringListModel, QObject, Slot
+from PySide2.QtCore import QStringListModel, QObject, Slot, QAbstractListModel, Qt
+from PySide2.QtCore import QModelIndex
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtQml import QQmlApplicationEngine
 
 
 class Bridge(QObject):
+    """
+    Bridge
+    ======
+
+    
+    """
     def __init__(self, parent=None):
         super().__init__()
-        self.model = QStringListModel(['a','b'])
+        self.parent = parent
+        self.model = MyListModel(['a','b'])
     
     @Slot(result=bool)
     def add_one(self):
@@ -20,6 +28,51 @@ class Bridge(QObject):
         self.model.setData(current_index, "FooBar")
         return True
 
+
+class MyListModel(QAbstractListModel):
+
+    def __init__(self, data, parent=None):
+        super().__init__()
+        self.parent = parent
+        self.lst = ['a','c']
+    
+    def rowCount(self, idx: QModelIndex=None) -> int:
+
+        return len(self.lst)
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        
+        if role == Qt.DisplayRole:
+            return self.lst[index.row()]
+        
+        if role == Qt.UserRole:
+            return 99
+        return
+
+    def insertRow(self, row: int, index: QModelIndex=QModelIndex()) -> bool:
+        if row < 0 or row > len(self.lst):
+            return False
+
+        self.beginInsertRows(QModelIndex(), row, row+1-1)
+        self.lst.insert(row, "Lorem Ipsum")
+        self.endInsertRows()
+        return True
+
+    def setData(self, index: QModelIndex, value: str, role: int=Qt.DisplayRole) -> bool:
+        if index.row() >=0 and index.row() < len(self.lst):
+            if not role == Qt.DisplayRole or role == Qt.EditRole:
+                return False
+            self.lst[index.row()] = value
+            self.dataChanged.emit(index, index, [Qt.EditRole | Qt.DisplayRole])
+        return False
+
+    def setNewList(self, lst: list=[]):
+        self.beginResetModel()
+        self.lst = lst
+        self.endResetModel()
+        return
 
 if __name__ == '__main__':
     app = QGuiApplication(sys.argv)
