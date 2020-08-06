@@ -66,6 +66,7 @@ class MyListModel(QAbstractListModel):
                 return False
             self.lst[index.row()] = value
             self.dataChanged.emit(index, index, [Qt.EditRole | Qt.DisplayRole])
+            return True
         return False
 
     def setNewList(self, lst: list=[]):
