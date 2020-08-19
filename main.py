@@ -12,7 +12,8 @@ class Bridge(QObject):
     Bridge
     ======
 
-    
+    The bridge is the QObject that manages communication between python code and QML
+    frontend.
     """
     def __init__(self, parent=None):
         super().__init__()
@@ -21,7 +22,6 @@ class Bridge(QObject):
     
     @Slot(result=bool)
     def add_one(self):
-        print("Add Element to List")
         current_index = self.model.createIndex(self.model.rowCount(),0)
         self.model.insertRow(0, current_index)
         current_index = self.model.createIndex(0,0)
@@ -30,14 +30,16 @@ class Bridge(QObject):
 
 
 class MyListModel(QAbstractListModel):
-
+    """
+    A abstract list model that implements the minimum amount of functions
+    neccessary to use the model with a QML QtQuick ComboBox.
+    """
     def __init__(self, data, parent=None):
         super().__init__()
         self.parent = parent
         self.lst = ['a','c']
     
     def rowCount(self, idx: QModelIndex=None) -> int:
-
         return len(self.lst)
 
     def data(self, index, role=Qt.DisplayRole):
